@@ -10,9 +10,10 @@ aluminum peripherial evaluation case.
 
 <robot name="sensor_d435" xmlns:xacro="http://ros.org/wiki/xacro">
   <!-- Includes -->
-  <xacro:include filename="$(find realsense2_description)/urdf/_d435.gazebo.xacro"/>
+  <xacro:include filename="$(find realsense2_description)/urdf/_materials.urdf.xacro" />
+  <xacro:include filename="$(find realsense2_description)/urdf/_usb_plug.urdf.xacro" />
 
-  <xacro:macro name="sensor_d435" params="parent *origin name:=camera topics_ns:=camera publish_pointcloud:=true use_nominal_extrinsics:=false add_plug:=false use_mesh:=false">
+  <xacro:macro name="sensor_d435" params="parent *origin name:=camera use_nominal_extrinsics:=false add_plug:=false use_mesh:=false">
     <xacro:property name="M_PI" value="3.1415926535897931" />
 
     <!-- The following values are approximate, and the camera node
@@ -47,6 +48,8 @@ aluminum peripherial evaluation case.
       <parent link="${parent}"/>
       <child link="${name}_bottom_screw_frame" />
     </joint>
+
+    <gazebo reference="${name}_bottom_screw_frame"/>
     <link name="${name}_bottom_screw_frame"/>
 
     <joint name="${name}_link_joint" type="fixed">
@@ -61,7 +64,7 @@ aluminum peripherial evaluation case.
           <!-- the mesh origin is at front plate in between the two infrared camera axes -->
           <origin xyz="${d435_zero_depth_to_glass + d435_glass_to_front} ${-d435_cam_depth_py} 0" rpy="${M_PI/2} 0 ${M_PI/2}"/>
           <geometry>
-            <mesh filename="package://realsense2_description/meshes/d435.dae" />
+            <mesh filename="/home/drone2021/satvikbot_ws/ros2_ws/src/realsense2_description/meshes/d435.dae"/>
           </geometry>
         </xacro:if>
         <xacro:unless value="${use_mesh}">
@@ -85,7 +88,9 @@ aluminum peripherial evaluation case.
         <inertia ixx="0.003881243" ixy="0.0" ixz="0.0" iyy="0.000498940" iyz="0.0" izz="0.003879257" />
       </inertial>
     </link>
-
+    <gazebo reference="${name}_link">
+      <material>Gazebo/Gray</material>
+    </gazebo>
     <!-- Use the nominal extrinsics between camera frames if the calibrated extrinsics aren't being published. e.g. running the device in simulation  -->
     <xacro:if value="${use_nominal_extrinsics}">
       <!-- camera depth joints and links -->
@@ -94,6 +99,8 @@ aluminum peripherial evaluation case.
         <parent link="${name}_link"/>
         <child link="${name}_depth_frame" />
       </joint>
+      
+      <gazebo reference="${name}_depth_frame"/>
       <link name="${name}_depth_frame"/>
 
       <joint name="${name}_depth_optical_joint" type="fixed">
@@ -101,6 +108,8 @@ aluminum peripherial evaluation case.
         <parent link="${name}_depth_frame" />
         <child link="${name}_depth_optical_frame" />
       </joint>
+
+      <gazebo reference="${name}_depth_optical_frame"/>
       <link name="${name}_depth_optical_frame"/>
 
       <!-- camera left IR joints and links -->
@@ -154,9 +163,5 @@ aluminum peripherial evaluation case.
         <origin xyz="${d435_cam_mount_from_center_offset - 0.02095} ${-d435_cam_depth_py - 0.0353} 0" rpy="0 0 0"/>
       </xacro:usb_plug>
     </xacro:if>
-
-     <!-- Realsense Gazebo Plugin -->
-    <xacro:gazebo_d435 camera_name="${name}" reference_link="${name}_link" topics_ns="${topics_ns}" depth_optical_frame="${name}_depth_optical_frame" color_optical_frame="${name}_color_optical_frame" infrared1_optical_frame="${name}_left_ir_optical_frame" infrared2_optical_frame="${name}_right_ir_optical_frame" publish_pointcloud="${publish_pointcloud}"/>
-
   </xacro:macro>
 </robot>
